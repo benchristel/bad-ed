@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bad Ed</title>
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine.min.css">
+
+  <!-- Jasmine libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine.min.js"
+          type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine-html.min.js"
+          type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/boot.min.js"
+          type="text/javascript"></script>
+
+  <script type="text/javascript" src="buffer.js"></script>
+  <script type="text/javascript" src="render.js"></script>
+
+</head>
+<body>
+<div class="terminal">
+</div>
+<script type="text/javascript">
+
+var buffer = Buffer('')
+var scrollState
+
+window.addEventListener('keydown', function(event) {
+    buffer = buffer.insert(event.charCode)
+
+    var render = Render(buffer, scrollState)
+    document.body.innerHTML = render.html()
+    scrollState = render.scrollState()
+})
+
+</script>
+</body>
+</html>
