@@ -70,6 +70,12 @@ describe('Buffer', function() {
         )).toEqual('abc[]def')
     })
 
+    it('does nothing when inserting null', function() {
+        expect(render(
+            Buffer('').insert(null)
+        )).toEqual('[]')
+    })
+
     it('backspaces a character', function() {
         expect(render(
             Buffer('hello')
@@ -158,5 +164,20 @@ describe('Buffer', function() {
             .selectRight()
             .selectRight()
         )).toEqual('h[e]llo')
+    })
+
+    it('knows the row and column where the selection begins', function() {
+        expect(Buffer('hello').selectionStartRow()).toEqual(0);
+        expect(Buffer('hello').selectionStartColumn()).toEqual(0);
+
+        var buffer = Buffer('a\nb').moveRight();
+        expect(buffer.selectionStartRow()).toEqual(0);
+        expect(buffer.selectionStartColumn()).toEqual(1);
+
+        buffer = Buffer('a\nb')
+            .moveRight()
+            .moveRight();
+        expect(buffer.selectionStartRow()).toEqual(1);
+        expect(buffer.selectionStartColumn()).toEqual(0);
     })
 })

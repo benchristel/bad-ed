@@ -2,20 +2,19 @@
 <html>
 <head>
 <title>Bad Ed</title>
+<script type="text/javascript" src="buffer.js"></script>
+<script type="text/javascript" src="render.js"></script>
+<script type="text/javascript" src="keyboard_controller.js"></script>
+<style type="text/css">
+body {
+    white-space: pre;
+    font-family: Menlo, Monaco, monospace;
+}
 
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine.min.css">
-
-  <!-- Jasmine libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine.min.js"
-          type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/jasmine-html.min.js"
-          type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/2.3.4/boot.min.js"
-          type="text/javascript"></script>
-
-  <script type="text/javascript" src="buffer.js"></script>
-  <script type="text/javascript" src="render.js"></script>
-
+.cursor {
+    border: 1px solid black;
+}
+</style>
 </head>
 <body>
 <div class="terminal">
@@ -24,13 +23,17 @@
 
 var buffer = Buffer('')
 var scrollState
+var renderer = Renderer()
+      .setLineWidth(80)
+      .setScreenHeight(28)
+      .setHorizontalScrollSensitivity(5)
+      .setVerticalScrollSensitivity(5)
 
 window.addEventListener('keydown', function(event) {
-    buffer = buffer.insert(event.charCode)
+    buffer = keyboardController.handleKeyDown(event, buffer)
 
-    var render = Render(buffer, scrollState)
-    document.body.innerHTML = render.html()
-    scrollState = render.scrollState()
+    var rendered = renderer(buffer, scrollState)
+    document.body.innerHTML = rendered.html()
 })
 
 </script>

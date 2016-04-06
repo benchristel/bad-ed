@@ -26,6 +26,10 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
         },
 
         insert(toInsert) {
+            if (!toInsert) {
+                return self;
+            }
+
             return Buffer(
                 beforeCursor() + toInsert + afterCursor(),
                 selectionStart + toInsert.length,
@@ -92,6 +96,21 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
         selectionEnd() {
             return selectionEnd;
         },
+
+        selectionStartRow() {
+            return count(text.slice(0, selectionStart), '\n')
+        },
+
+        selectionStartColumn() {
+            const indexBeforeSelection = selectionStart - 1
+
+            return indexBeforeSelection
+                - text.lastIndexOf('\n', indexBeforeSelection);
+        }
+    }
+
+    function count(inText, character) {
+        return inText.split(character).length - 1
     }
 
     function hasSelection() {

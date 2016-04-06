@@ -1,9 +1,9 @@
 "use strict";
 
 function toArray(a) {
-    var result = []
+    var result = new Array(a.length)
     for (var i = 0; i < a.length; i++) {
-        result.push(a[i])
+        result[i] = a[i]
     }
     return result
 }
@@ -26,9 +26,9 @@ var Renderer = function(
             html: function() {
                 return buffer
                   .text()
-                  .pipe(insertCursor, buffer)
                   .split('\n')
                   .map(truncateToLineWidth)
+                  .pipe(insertCursor, buffer)
                   .join('\n')
             }
         }
@@ -71,6 +71,16 @@ var Renderer = function(
     }
 
     function truncateToLineWidth(string) {
+        var unrenderedChars = string.length - renderedLength(string)
+        return string.slice(0, lineWidth + unrenderedChars)
+    }
+
+    function renderedLength(string) {
+        // returns the length of the string, in characters, when
+        // rendered on the screen, taking into account that HTML
+        // tags are not rendered, and HTML entities show up as
+        // one character.
+
         var includedHTML = string.match(/<[^>]+>/g)
         var totalHTMLLength
 
@@ -82,17 +92,50 @@ var Renderer = function(
             totalHTMLLength = 0
         }
 
+        var htmlEntities = string.match(/&[^&]+;/g)
+        if (htmlEntities) {
+            totalHTMLLength +=
+                htmlEntities
+                .map(s => s.length - 1)
+                .reduce((sum, length) => sum + length)
+        }
 
-
-        return string.slice(0, lineWidth + totalHTMLLength)
+        return string.length - totalHTMLLength
     }
 
-    function insertCursor(string, buffer) {
-        var before, between, after
-        before = string.substring(0, buffer.selectionStart())
-        between = string.substring(buffer.selectionStart(), buffer.selectionEnd())
-        after = string.substring(buffer.selectionEnd(), string.length)
-        return before + '<span class="cursor">' + between + '</span>' + after
+    function escapeHtml(raw) {
+        return raw
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+    }
+
+    function insertCursor(lines, buffer) {
+        var before, between, after,
+            selStart = buffer.selectionStart(),
+            selEnd   = buffer.selectionEnd(),
+            startLine, startCol,
+            endLine, endCol
+
+        var textBeforeSelStart = buffer.text().substring(0, selStart)
+        var textBeforeSelEnd = buffer.text().substring(selStart, selEnd)
+
+        startLine = count(textBeforeSelStart, '\n')
+
+        startCol = textBeforeSelStart.length - textBeforeSelStart.lastIndexOf('\n') - 1
+
+        endLine = count(textBeforeSelEnd, '\n')
+        endCol = textBeforeSelEnd.length - textBeforeSelEnd.lastIndexOf('\n') - 1
+
+        return escapeHtml(before)
+            + '<span class="cursor">'
+            + escapeHtml(between)
+            + '</span>'
+            + escapeHtml(after)
+    }
+
+    function count(haystack, needle) {
+        haystack.split(needle).length - 1
     }
 
     return renderer
