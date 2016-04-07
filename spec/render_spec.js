@@ -1,6 +1,6 @@
 "use strict";
 
-xdescribe("rendering", function() {
+describe("rendering", function() {
     var renderer = Renderer()
       .setLineWidth(80)
       .setScreenHeight(28)
@@ -37,6 +37,14 @@ xdescribe("rendering", function() {
         expect(rendered.html()).toEqual(expected)
     })
 
+    it("truncates lines in the presence of literal html tags", function() {
+        var buffer = Buffer('<hello>')
+        var rendered = renderer.setLineWidth(4)(buffer)
+        var expected = '<span class="cursor"></span>&lt;hel'
+
+        expect(rendered.html()).toEqual(expected)
+    })
+
     it("truncates lines when the cursor is at the end", function() {
         var buffer = Buffer('hello')
           .moveRight()
@@ -45,6 +53,15 @@ xdescribe("rendering", function() {
         var rendered = renderer.setLineWidth(2)(buffer)
 
         expect(rendered.html()).toEqual('he');
+    })
+
+    it("renders the cursor at the end of a line", function() {
+        var buffer = Buffer('ab')
+          .moveRight()
+          .moveRight()
+        var rendered = renderer(buffer)
+
+        expect(rendered.html()).toEqual('ab<span class="cursor"></span>');
     })
 
     it("renders the cursor at the right position", function() {
@@ -59,6 +76,14 @@ xdescribe("rendering", function() {
         var buffer = Buffer('<script>h&cked')
         var rendered = renderer(buffer)
         var expected = '<span class="cursor"></span>&lt;script&gt;h&amp;cked'
+
+        expect(rendered.html()).toEqual(expected)
+    })
+
+    it("html-escapes angle brackets and ampersands on lines not containing the cursor", function() {
+        var buffer = Buffer('&\nb').moveRight().moveRight().moveRight()
+        var rendered = renderer(buffer)
+        var expected = '&amp;\nb<span class="cursor"></span>'
 
         expect(rendered.html()).toEqual(expected)
     })

@@ -71,36 +71,7 @@ var Renderer = function(
     }
 
     function truncateToLineWidth(string) {
-        var unrenderedChars = string.length - renderedLength(string)
-        return string.slice(0, lineWidth + unrenderedChars)
-    }
-
-    function renderedLength(string) {
-        // returns the length of the string, in characters, when
-        // rendered on the screen, taking into account that HTML
-        // tags are not rendered, and HTML entities show up as
-        // one character.
-
-        var includedHTML = string.match(/<[^>]+>/g)
-        var totalHTMLLength
-
-        if (includedHTML) {
-            totalHTMLLength = includedHTML
-                .map(s => s.length)
-                .reduce((sum, length) => sum + length)
-        } else {
-            totalHTMLLength = 0
-        }
-
-        var htmlEntities = string.match(/&[^&]+;/g)
-        if (htmlEntities) {
-            totalHTMLLength +=
-                htmlEntities
-                .map(s => s.length - 1)
-                .reduce((sum, length) => sum + length)
-        }
-
-        return string.length - totalHTMLLength
+        return string.slice(0, lineWidth)
     }
 
     function escapeHtml(raw) {
@@ -111,27 +82,22 @@ var Renderer = function(
     }
 
     function insertCursor(lines, buffer) {
-        var before, between, after,
-            selStart = buffer.selectionStart(),
-            selEnd   = buffer.selectionEnd(),
-            startLine, startCol,
-            endLine, endCol
+        const
+            row = buffer.selectionStartRow(),
+            col = buffer.selectionStartColumn(),
+            lineWithCursor = lines[row],
+            before = lineWithCursor.slice(0, col),
+            after  = lineWithCursor.slice(col, lineWithCursor.length),
+            linesCopy = toArray(lines.map(escapeHtml)),
+            cursorInView = col <= lineWithCursor.length
 
-        var textBeforeSelStart = buffer.text().substring(0, selStart)
-        var textBeforeSelEnd = buffer.text().substring(selStart, selEnd)
+        if (cursorInView) {
+            linesCopy[row] = escapeHtml(before)
+                + '<span class="cursor"></span>'
+                + escapeHtml(after)
+        }
 
-        startLine = count(textBeforeSelStart, '\n')
-
-        startCol = textBeforeSelStart.length - textBeforeSelStart.lastIndexOf('\n') - 1
-
-        endLine = count(textBeforeSelEnd, '\n')
-        endCol = textBeforeSelEnd.length - textBeforeSelEnd.lastIndexOf('\n') - 1
-
-        return escapeHtml(before)
-            + '<span class="cursor">'
-            + escapeHtml(between)
-            + '</span>'
-            + escapeHtml(after)
+        return linesCopy
     }
 
     function count(haystack, needle) {
