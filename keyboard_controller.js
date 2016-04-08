@@ -121,11 +121,19 @@ const keyboardController = {
         }
 
         if (event.keyCode === LEFT) {
-            return buffer.moveLeft()
+            if (event.shiftKey) {
+                return buffer.selectLeft();
+            } else {
+                return buffer.moveLeft()
+            }
         }
 
         if (event.keyCode === RIGHT) {
-            return buffer.moveRight()
+            if (event.shiftKey) {
+                return buffer.selectRight();
+            } else {
+                return buffer.moveRight();
+            }
         }
 
         if (event.shiftKey) {

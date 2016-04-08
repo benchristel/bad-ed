@@ -31,6 +31,7 @@ var renderer = Renderer()
       .setVerticalScrollSensitivity(5)
 
 window.addEventListener('keydown', function(event) {
+    event.preventDefault();
     buffer = keyboardController.handleKeyDown(event, buffer)
 
     var rendered = renderer(buffer, scrollState)

@@ -72,6 +72,29 @@ describe("rendering", function() {
         expect(rendered.html()).toEqual(expected)
     })
 
+    it("renders the cursor around selected text", function() {
+        var buffer = Buffer('ham!')
+            .selectRight()
+            .selectRight()
+
+        var rendered = renderer(buffer)
+        var expected = '<span class="cursor">ha</span>m!'
+
+        expect(rendered.html()).toEqual(expected)
+    })
+
+    it("renders selections spanning multiple lines", function() {
+        var buffer = Buffer('a\nbc')
+            .selectRight()
+            .selectRight()
+            .selectRight()
+
+        var rendered = renderer(buffer)
+        var expected = '<span class="cursor">a\nb</span>c'
+
+        expect(rendered.html()).toEqual(expected)
+    })
+
     it("html-escapes angle brackets and ampersands", function() {
         var buffer = Buffer('<script>h&cked')
         var rendered = renderer(buffer)

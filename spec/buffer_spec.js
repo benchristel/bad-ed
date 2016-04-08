@@ -129,6 +129,25 @@ describe('Buffer', function() {
         )).toEqual('j[]ello')
     })
 
+    it('deletes selected text on backspace', function() {
+        expect(render(
+            Buffer('boaot')
+            .moveRight()
+            .moveRight()
+            .moveRight()
+            .selectRight()
+            .backspace()
+        )).toEqual('boa[]t')
+    })
+
+    it('deletes selected text when the selection begins the document', function() {
+        expect(render(
+            Buffer('boaot')
+            .selectRight()
+            .backspace()
+        )).toEqual('[]oaot')
+    })
+
     it('deselects text after selecting to the right', function() {
         expect(render(
             Buffer('hello')
@@ -179,5 +198,20 @@ describe('Buffer', function() {
             .moveRight();
         expect(buffer.selectionStartRow()).toEqual(1);
         expect(buffer.selectionStartColumn()).toEqual(0);
+    })
+
+    it('knows the row and column where the selection ends', function() {
+        expect(Buffer('hello').selectionStartRow()).toEqual(0);
+        expect(Buffer('hello').selectionStartColumn()).toEqual(0);
+
+        var buffer = Buffer('a\nb').selectRight();
+        expect(buffer.selectionEndRow()).toEqual(0);
+        expect(buffer.selectionEndColumn()).toEqual(1);
+
+        buffer = Buffer('a\nb')
+            .selectRight()
+            .selectRight();
+        expect(buffer.selectionEndRow()).toEqual(1);
+        expect(buffer.selectionEndColumn()).toEqual(0);
     })
 })

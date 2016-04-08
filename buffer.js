@@ -38,13 +38,21 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
         },
 
         backspace() {
-            if (selectionStart === 0) return self;
-
-            return Buffer(
-                beforeCursor(-1) + afterCursor(),
-                selectionStart - 1,
-                selectionStart - 1
-            )
+            if (hasSelection()) {
+                return Buffer(
+                    beforeCursor() + afterCursor(),
+                    selectionStart,
+                    selectionStart
+                )
+            } else if (selectionStart === 0) {
+                return self
+            } else {
+                return Buffer(
+                    beforeCursor(-1) + afterCursor(),
+                    selectionStart - 1,
+                    selectionStart - 1
+                )
+            }
         },
 
         selectRight() {
@@ -106,6 +114,17 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
 
             return indexBeforeSelection
                 - text.lastIndexOf('\n', indexBeforeSelection);
+        },
+
+        selectionEndRow() {
+            return count(text.slice(0, selectionEnd), '\n')
+        },
+
+        selectionEndColumn() {
+            const indexBeforeSelectionEnd = selectionEnd - 1
+
+            return indexBeforeSelectionEnd
+                - text.lastIndexOf('\n', indexBeforeSelectionEnd);
         }
     }
 

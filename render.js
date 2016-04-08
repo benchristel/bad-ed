@@ -82,19 +82,38 @@ var Renderer = function(
     }
 
     function insertCursor(lines, buffer) {
+        debugger
+
         const
-            row = buffer.selectionStartRow(),
-            col = buffer.selectionStartColumn(),
-            lineWithCursor = lines[row],
-            before = lineWithCursor.slice(0, col),
-            after  = lineWithCursor.slice(col, lineWithCursor.length),
+            startRow = buffer.selectionStartRow(),
+            startCol = buffer.selectionStartColumn(),
+            endRow   = buffer.selectionEndRow(),
+            endCol   = buffer.selectionEndColumn(),
+            lineWithCursorStart = lines[startRow],
+            lineWithCursorEnd   = lines[endRow],
+            before  = lineWithCursorStart.slice(0, startCol),
+            after = lineWithCursorStart.slice(startCol, lineWithCursorStart.length),
             linesCopy = toArray(lines.map(escapeHtml)),
-            cursorInView = col <= lineWithCursor.length
+            cursorInView = startCol <= lineWithCursorStart.length
 
         if (cursorInView) {
-            linesCopy[row] = escapeHtml(before)
-                + '<span class="cursor"></span>'
-                + escapeHtml(after)
+            if (startRow !== endRow) {
+                linesCopy[endRow]
+                    = escapeHtml(lineWithCursorEnd.slice(0, endCol))
+                    + '</span>'
+                    + escapeHtml(lineWithCursorEnd.slice(endCol,lineWithCursorEnd.length))
+
+                linesCopy[startRow] = escapeHtml(before)
+                    + '<span class="cursor">'
+                    + escapeHtml(after)
+            } else {
+                linesCopy[startRow]
+                    = escapeHtml(lineWithCursorStart.slice(0, startCol))
+                    + '<span class="cursor">'
+                    + escapeHtml(lineWithCursorStart.slice(startCol, endCol))
+                    + '</span>'
+                    + escapeHtml(lineWithCursorStart.slice(endCol))
+            }
         }
 
         return linesCopy
