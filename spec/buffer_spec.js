@@ -19,6 +19,14 @@ describe('Buffer', function() {
         expect(() => Buffer('', -1, 1)).toThrowError()
     })
 
+    it('blows up if text is selected but there is no select direction', function() {
+        expect(() => Buffer('abc', 1, 2)).toThrowError()
+    })
+
+    it('defaults to no selection if selectionEnd is not given', function() {
+        expect(render(Buffer('ab', 1))).toEqual('a[]b')
+    })
+
     it('moves the cursor right', function() {
         expect(render(Buffer("hello"))).toEqual('[]hello')
         expect(render(Buffer("hello").moveRight())).toEqual('h[]ello')
@@ -187,6 +195,15 @@ describe('Buffer', function() {
             .selectRight()
             .moveRight()
         )).toEqual('h[]ello')
+    })
+
+    it('does not select past the end', function() {
+        expect(render(
+            Buffer('a')
+            .selectRight()
+            .selectRight()
+            .selectLeft()
+        )).toEqual('[]a')
     })
 
     it('selects right and then left', function() {
