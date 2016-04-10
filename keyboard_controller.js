@@ -136,6 +136,10 @@ const keyboardController = {
             }
         }
 
+        if (event.keyCode === UP) {
+            return buffer.moveUp();
+        }
+
         if (event.shiftKey) {
             return buffer.insert(shiftKeymap[event.keyCode])
         } else {
