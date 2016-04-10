@@ -28,6 +28,7 @@ var Renderer = function(
                   .text()
                   .split('\n')
                   .map(truncateToLineWidth)
+                  // TODO: truncate to screen height
                   .pipe(insertCursor, buffer)
                   .join('\n')
             }
@@ -82,8 +83,6 @@ var Renderer = function(
     }
 
     function insertCursor(lines, buffer) {
-        debugger
-
         const
             startRow = buffer.selectionStartRow(),
             startCol = buffer.selectionStartColumn(),
