@@ -7,8 +7,12 @@ function Buffer(text,
                 selectDirection,
                 targetColumn) {
 
+    /* VALIDATION OF CONSTRUCTOR PARAMS */
+
     if (selectionStart === undefined) {
         selectionStart = 0;
+    } else if (selectionStart < 0) {
+        throw new Error('selectionStart must be >= 0')
     }
 
     if (selectionEnd === undefined) {
@@ -23,28 +27,26 @@ function Buffer(text,
         throw new Error('selectionStart must not be greater than selectionEnd')
     }
 
-    if (selectionStart < 0) {
-        throw new Error('selectionStart must be >= 0')
-    }
+    /* PUBLIC METHODS */
 
     const self = {
         moveRight() {
             if (hasSelection()) {
-                return Buffer(text, selectionEnd)
+                return moveToEndOfSelection()
             } else if (cursorAtEndOfText()) {
                 return self
             } else {
-                return Buffer(text, selectionEnd + 1);
+                return moveOneCharacterRight()
             }
         },
 
         moveLeft() {
             if (hasSelection()) {
-                return Buffer(text, selectionStart);
+                return moveToStartOfSelection()
             } else if (cursorAtBeginningOfText()) {
-                 return self
+                return self
             } else {
-                return Buffer(text, selectionStart - 1);
+                return moveOneCharacterLeft()
             }
         },
 
@@ -93,17 +95,11 @@ function Buffer(text,
 
         backspace() {
             if (hasSelection()) {
-                return Buffer(
-                    beforeCursor() + afterCursor(),
-                    selectionStart
-                )
+                return deleteSelectedText()
             } else if (cursorAtBeginningOfText()) {
                 return self
             } else {
-                return Buffer(
-                    beforeCursor(-1) + afterCursor(),
-                    selectionStart - 1
-                )
+                return deleteOneCharacterBack()
             }
         },
 
@@ -194,6 +190,13 @@ function Buffer(text,
         )
     }
 
+    function deleteSelectedText() {
+        return Buffer(
+            beforeCursor() + afterCursor(),
+            selectionStart
+        )
+    }
+
     function count(character, inText) {
         return inText.split(character).length - 1
     }
@@ -235,7 +238,28 @@ function Buffer(text,
         return selectionEnd === text.length
     }
 
-    // METHODS TO MOVE TO CURSOR CLASS
+    function deleteOneCharacterBack() {
+        return Buffer(
+            beforeCursor(-1) + afterCursor(),
+            selectionStart - 1
+        )
+    }
+
+    function moveOneCharacterRight() {
+        return Buffer(text, selectionEnd + 1);
+    }
+
+    function moveOneCharacterLeft() {
+        return Buffer(text, selectionStart - 1);
+    }
+
+    function moveToEndOfSelection() {
+        return Buffer(text, selectionEnd)
+    }
+
+    function moveToStartOfSelection() {
+        return Buffer(text, selectionStart);
+    }
 
     function onFirstLine() {
         return self.selectionStartRow() === 0
