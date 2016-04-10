@@ -1,7 +1,12 @@
 const SELECT_LEFT = 'left'
 const SELECT_RIGHT = 'right'
 
-function Buffer(text, selectionStart, selectionEnd, selectDirection) {
+function Buffer(text,
+                selectionStart,
+                selectionEnd,
+                selectDirection,
+                targetColumn) {
+
     if (selectionStart === undefined) {
         selectionStart = 0;
     }
@@ -10,19 +15,57 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
         selectionEnd = 0;
     }
 
+    if (selectionStart > selectionEnd) {
+        throw new Error('selectionStart must not be greater than selectionEnd')
+    }
+
+    if (selectionStart < 0) {
+        throw new Error('selectionStart must be >= 0')
+    }
+
     const self = {
         moveRight() {
-            if (selectionEnd === text.length) return self;
-            const newPos = selectionEnd + 1
+            if (hasSelection()) {
+                return Buffer(text, selectionEnd, selectionEnd);
+            } else {
+                if (selectionEnd === text.length) return self;
+                const newPos = selectionEnd + 1
 
-            return Buffer(text, newPos, newPos);
+                return Buffer(text, newPos, newPos);
+            }
         },
 
         moveLeft() {
-            if (selectionStart === 0) return self
-            const newPos = selectionStart - 1
+            if (hasSelection()) {
+                return Buffer(text, selectionStart, selectionStart);
+            } else {
+                if (selectionStart === 0) return self
+                const newPos = selectionStart - 1
 
-            return Buffer(text, newPos, newPos);
+                return Buffer(text, newPos, newPos);
+            }
+
+        },
+
+        moveUp() {
+            if (self.selectionStartRow() === 0) {
+                return self
+            }
+
+            const beginningOfCurrentLine =
+                beginningOfLine(text, selectionStart),
+
+                beginningOfPreviousLine =
+                beginningOfLine(text, beginningOfCurrentLine - 1)
+
+            const newTargetColumn = targetColumn || self.selectionStartColumn()
+            const newPos = beginningOfPreviousLine + newTargetColumn
+
+            if (newPos >= beginningOfCurrentLine) {
+                return Buffer(text, beginningOfCurrentLine - 1, beginningOfCurrentLine - 1, null, newTargetColumn)
+            } else {
+                return Buffer(text, newPos, newPos)
+            }
         },
 
         insert(toInsert) {
@@ -146,4 +189,8 @@ function Buffer(text, selectionStart, selectionEnd, selectDirection) {
     }
 
     return self
+}
+
+function beginningOfLine(text, index) {
+    return text.lastIndexOf('\n', index - 1) + 1
 }

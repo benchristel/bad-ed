@@ -11,6 +11,14 @@ describe('Buffer', function() {
         return s.slice(0, index) + toInsert + s.slice(index, s.length)
     }
 
+    it('blows up if the selection ends before it begins', function() {
+        expect(() => Buffer('', 2, 1)).toThrowError()
+    })
+
+    it('blows up if the selection starts at a negative index', function() {
+        expect(() => Buffer('', -1, 1)).toThrowError()
+    })
+
     it('moves the cursor right', function() {
         expect(render(Buffer("hello"))).toEqual('[]hello')
         expect(render(Buffer("hello").moveRight())).toEqual('h[]ello')
@@ -148,7 +156,7 @@ describe('Buffer', function() {
         )).toEqual('[]oaot')
     })
 
-    it('deselects text after selecting to the right', function() {
+    it('incrementally deselects text selected to the right', function() {
         expect(render(
             Buffer('hello')
             .selectRight()
@@ -156,12 +164,28 @@ describe('Buffer', function() {
         )).toEqual('[]hello')
     })
 
-    it('deselects text after selecting to the left', function() {
+    it('incrementally deselects text selected to the left', function() {
         expect(render(
             Buffer('hello')
             .moveRight()
             .selectLeft()
             .selectRight()
+        )).toEqual('h[]ello')
+    })
+
+    it('deselects on move left', function() {
+        expect(render(
+            Buffer('hello')
+            .selectRight()
+            .moveLeft()
+        )).toEqual('[]hello')
+    })
+
+    it('deselects on move right', function() {
+        expect(render(
+            Buffer('hello')
+            .selectRight()
+            .moveRight()
         )).toEqual('h[]ello')
     })
 
@@ -213,5 +237,70 @@ describe('Buffer', function() {
             .selectRight();
         expect(buffer.selectionEndRow()).toEqual(1);
         expect(buffer.selectionEndColumn()).toEqual(0);
+    })
+
+    it('moves the cursor up one line', function() {
+        expect(render(
+            Buffer('\nab\ncd', 5, 5)
+            .moveUp()
+        )).toEqual('\na[]b\ncd')
+    })
+
+    it('moves the cursor up one line, when the previous line is shorter than the current one', function() {
+        expect(render(
+            Buffer('\n1\n34', 5, 5)
+            .moveUp()
+        )).toEqual('\n1[]\n34')
+    })
+
+    it('moves the cursor up, past a short line to a long one', function() {
+        expect(render(
+            Buffer('\n12\n4\n67', 8, 8)
+            .moveUp()
+            .moveUp()
+        )).toEqual('\n12[]\n4\n67')
+    })
+
+    it('moves the cursor up, past alternating long and short lines', function() {
+        expect(render(
+            Buffer('\n123\n5\n789\n12', 13, 13)
+            .moveUp()
+            .moveUp()
+            .moveUp()
+        )).toEqual('\n12[]3\n5\n789\n12')
+    })
+
+    it('moves the cursor up, past alternating long and short lines', function() {
+        expect(render(
+            Buffer('\n123\n5\n789\n12', 13, 13)
+            .moveUp()
+            .moveUp()
+            .moveUp()
+        )).toEqual('\n12[]3\n5\n789\n12')
+    })
+
+    it('moves the cursor up, past two successively-shorter lines', function() {
+        expect(render(
+            Buffer('\n123\n\n6\n89', 10, 10)
+            .moveUp()
+            .moveUp()
+            .moveUp()
+        )).toEqual('\n12[]3\n\n6\n89')
+    })
+
+    it('does not move the cursor past the beginning of the text', function() {
+        expect(render(
+            Buffer('')
+            .moveUp()
+        )).toEqual('[]')
+    })
+})
+
+describe('beginningOfLine', function() {
+    it('finds the beginning of the line containing an index', function() {
+        const text = '0123\n5678'
+        expect(beginningOfLine(text, 6)).toEqual(5)
+        expect(beginningOfLine(text, 5)).toEqual(5)
+        expect(beginningOfLine(text, 4)).toEqual(0)
     })
 })
