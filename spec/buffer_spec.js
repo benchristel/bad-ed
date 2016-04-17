@@ -12,15 +12,15 @@ describe('Buffer', function() {
     }
 
     it('blows up if the selection ends before it begins', function() {
-        expect(() => Buffer('', 2, 1)).toThrowError()
+        expect(function() { Buffer('', 2, 1) }).toThrowError()
     })
 
     it('blows up if the selection starts at a negative index', function() {
-        expect(() => Buffer('', -1, 1)).toThrowError()
+        expect(function() { Buffer('', -1, 1) }).toThrowError()
     })
 
     it('blows up if text is selected but there is no select direction', function() {
-        expect(() => Buffer('abc', 1, 2)).toThrowError()
+        expect(function() { Buffer('abc', 1, 2) }).toThrowError()
     })
 
     it('defaults to no selection if selectionEnd is not given', function() {
